@@ -34,6 +34,39 @@ class UsuariosController{
       return res.status(500).send({mensagem: 'Servidor com problemas. Tente novamente mais tarde!'});
     }
   }
+
+  static async login(req, res){
+    const {email, senha} = req.body;
+
+    try {
+      //Verificando os  campos obrigátorios
+      verificaCamposEmBranco(req.body, res, 'email', 'senha');
+
+      //Verificando se existe usuário cadastrado com email fornecedo
+      const [usuario] = await db('usuarios').where('email', email);
+      if(!usuario){
+        return res.status(409).send({mensagem: 'Usuário inválido. Email não cadastrado.'}) ;
+      }
+
+      //validando senha
+      const validaSenha = await bcrypt.compare(senha, usuario.senha);
+      if(!validaSenha){
+        return res.status(401).send({mensagem: 'Senha inválida.'});
+      }
+
+      const secret = process.env.SECRET;
+      const token =  jwt.sign({
+        id: usuario.id,
+      },secret);
+      
+      return res.status(200).send({usuario: {id: usuario.id, nome: usuario.nome, email: usuario.email}, token: token});
+
+
+    } catch (erro) {
+      console.log(erro);
+      return res.status(500).send({mensagem: 'Servidor com problemas. Tente novamente mais tarde!'});
+    }
+  }
 }
 
 

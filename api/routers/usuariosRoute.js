@@ -4,5 +4,6 @@ const router = Router();
 
 router
 .post('/usuario', UsuariosController.cadastrarUsuario)
+.post('/login', UsuariosController.login)
 
 export default router;
