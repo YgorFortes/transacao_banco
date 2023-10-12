@@ -54,13 +54,14 @@ class UsuariosController{
         return res.status(401).send({mensagem: 'Senha inválida.'});
       }
 
+      //Criando token com id 
       const secret = process.env.SECRET;
       const token =  jwt.sign({
         id: usuario.id,
       },secret);
+
       
       return res.status(200).send({usuario: {id: usuario.id, nome: usuario.nome, email: usuario.email}, token: token});
-
 
     } catch (erro) {
       console.log(erro);
