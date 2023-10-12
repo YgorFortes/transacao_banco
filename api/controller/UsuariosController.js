@@ -43,30 +43,72 @@ class UsuariosController{
       verificaCamposEmBranco(req.body, res, 'email', 'senha');
 
       //Verificando se existe usuário cadastrado com email fornecedo
-      const [usuario] = await db('usuarios').where('email', email);
-      if(!usuario){
+      const [usuarioEncontrado] = await db('usuarios').where('email', email);
+      if(!usuarioEncontrado){
         return res.status(409).send({mensagem: 'Usuário inválido. Email não cadastrado.'}) ;
       }
 
+       
+
       //validando senha
-      const validaSenha = await bcrypt.compare(senha, usuario.senha);
+      const validaSenha = await bcrypt.compare(senha, usuarioEncontrado.senha);
       if(!validaSenha){
         return res.status(401).send({mensagem: 'Senha inválida.'});
       }
-
+console.log(usuarioEncontrado.id)
       //Criando token com id 
       const secret = process.env.SECRET;
       const token =  jwt.sign({
-        id: usuario.id,
+        id: usuarioEncontrado.id,
       },secret);
 
+      //criando um objeto de usuário sem a senha
+      const usuario = {
+        id: usuarioEncontrado.id,
+        nome: usuarioEncontrado.nome,
+        email: usuarioEncontrado.email
+      }
       
-      return res.status(200).send({usuario: {id: usuario.id, nome: usuario.nome, email: usuario.email}, token: token});
+      return res.status(200).send({usuario: usuario, token: token});
 
     } catch (erro) {
       console.log(erro);
       return res.status(500).send({mensagem: 'Servidor com problemas. Tente novamente mais tarde!'});
     }
+  }
+
+  static async detalharUsuario(req, res){
+
+    //Buscando token e resgatando o id de usuário
+    const secret = process.env.SECRET;
+    const token = req.get('authorization').split(' ')[1];
+    const idUsario = await jwt.verify(token, secret).id;
+
+    try {
+
+      //Verificando se usuário existe
+      const [usuarioEncontrado] = await db('usuarios').where('id', idUsario);
+      if(!usuarioEncontrado){
+        return res.status(404).send({mensagem: 'Usuário não encontrado'});
+      }
+
+      //criando um objeto de usuário sem a senha
+      const usuario = {
+        id: usuarioEncontrado.id,
+        nome: usuarioEncontrado.nome,
+        email: usuarioEncontrado.email
+      }
+
+      return res.status(200).send(usuario)
+    } catch (erro) {
+      console.log(erro);
+      return res.status(500).send({mensagem: 'Servidor com problemas. Tente novamente mais tarde!'});
+    }
+
+  }
+
+  static async atualizarUsuario(req, res){
+    console.log('HEHEHEHHEHEHE SHOW HEHEHEHHE');
   }
 }
 

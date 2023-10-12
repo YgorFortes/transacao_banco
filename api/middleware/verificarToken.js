@@ -11,12 +11,15 @@ function verificarToken(req, res, next){
   }
 
   try {
+    
+    //Comparando  token com a chave pública
     const secret = process.env.SECRET;
     jwt.verify(token, secret);
     next();
+
   } catch (erro) {
     console.log(erro);
-    return res.status(401).send({mensagem: 'Token inválido'});
+    return res.status(401).send({mensagem: 'Para acessar este recurso um token de autenticação válido deve ser enviado'});
   }
 }
 
