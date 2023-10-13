@@ -7,5 +7,6 @@ router
 .get('/categoria',verificarToken, CategoriasController.listarCategorias)
 .get('/categoria/:id',verificarToken, CategoriasController.listarCategoriaPorId)
 .post('/categoria', verificarToken, CategoriasController.cadastrarCategoria)
+.put('/categoria/:id', verificarToken, CategoriasController.atualizarCategoria)
 
 export default router;
