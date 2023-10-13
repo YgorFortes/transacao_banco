@@ -3,7 +3,7 @@ function verificaCamposEmBranco(req, ...campos){
   let  mensagem ;
   for (let campo of campos){
     if(!req[campo]){
-      return mensagem =  `Campo ${campo} vazio. Digite o campo`;
+      return mensagem =  `O campo ${campo} está vazio. Por favor, preencha o campo ${campo}.`;
     }
   }
   

@@ -37,6 +37,7 @@ class CategoriasController{
   static async listarCategoriaPorId(req, res){
     const {id} =  req.params;
     try {
+  
       //Resgatando id de usuário pelo token
       const idUsuario = await resgatarIdUsuarioPorToken(req);
 
@@ -53,8 +54,8 @@ class CategoriasController{
       }).where('categorias.id', id);
 
       //Verificando se categoria existe
-      if(!categoria){
-        return res.status(404).send({mensagem: "Categoria não encontrada."})
+      if((!categoria)){
+        return  res.status(404).send({mensagem: "Categoria não encontrada."})
       }
    
       return res.status(200).send(categoria);
@@ -63,6 +64,47 @@ class CategoriasController{
       return res.status(500).send({mensagem: 'Servidor com problemas. Tente novamente mais tarde!'});
     }
   }
+
+  static async cadastrarCategoria(req, res){
+    const {descricao} = req.body;
+    try {
+      //Resgatando id de usuário pelo token
+      const idUsuario = await resgatarIdUsuarioPorToken(req);
+
+
+      //Verificando se algum campo ficou em branco
+      const erroCampos = verificaCamposEmBranco(req.body, 'descricao');
+      if(erroCampos){
+        return res.status(409).send({mensagem: erroCampos});
+      }
+
+      const [idNovaCategoria] = await db('categorias').insert({usuario_id: idUsuario, descricao});
+
+      const [novaCategoria] = await db('categorias').select([
+        'categorias.id',
+        'categorias.descricao ',
+        'usuarios.nome as usuario',
+        'usuario_id',
+      ])
+      .innerJoin('usuarios', function (){
+        this.on('categorias.usuario_id', '=', 'usuarios.id')
+        .andOn('usuarios.id', '=', idUsuario);
+      }).where('categorias.id', idNovaCategoria);
+
+      //Verificando se categoria existe
+      if((!novaCategoria)){
+        return  res.status(404).send({mensagem: "Categoria não encontrada."})
+      }
+   
+      return res.status(200).send(novaCategoria);
+      
+    } catch (erro) {
+      console.log(erro);
+      return res.status(500).send({mensagem: 'Servidor com problemas. Tente novamente mais tarde!'});
+    }
+  }
 }
+
+
 
 export default CategoriasController;
