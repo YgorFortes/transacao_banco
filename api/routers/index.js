@@ -1,5 +1,6 @@
 import express from "express";
-import usuarios from "./usuariosRoute.js"
+import usuarios from "./usuariosRoute.js";
+import categorias from "./categoriasRoute.js";
 export default app =>{
   app.get('/',(req, res)=>{
     res.status(200).send({mensagem: 'Servidor funcionado!'});
@@ -7,6 +8,7 @@ export default app =>{
 
   app.use(
     express.json(),
-    usuarios
+    usuarios,
+    categorias
   )
 }

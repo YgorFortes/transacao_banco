@@ -1,8 +1,8 @@
-import db from '../database/conecaoDb.js';
 import bcrypt from 'bcrypt';
 import jwt  from 'jsonwebtoken';
 import 'dotenv/config';
-import verificaCamposEmBranco from '../helpers/utilitarios.js'
+import utilitarios from '../helpers/utilitarios.js';
+const {verificaCamposEmBranco, resgatarIdUsuarioPorToken} = utilitarios;
 
 import UsuariosServices from '../services/index.js';
 const usuariosServices = new UsuariosServices();
@@ -15,9 +15,12 @@ class UsuariosController{
     try {
 
       //Verificando os  campos obrigátorios
-      verificaCamposEmBranco(req.body, res, 'nome', 'email', 'senha');
+      const erroCampos = verificaCamposEmBranco(req.body, 'nome', 'email', 'senha');
+      if(erroCampos){
+        return res.status(409).send({mensagem: erroCampos}) ;
+      }
       
-      //Verificando se existe usuário cadastrado com o email
+      // Verificando se existe usuário cadastrado com o email
       const [usuarioExiste] = await usuariosServices.listarRegistro('email', email);
       if(usuarioExiste){
         return res.status(409).send({mensagem: 'Email já cadastrado'}) ;
@@ -26,11 +29,11 @@ class UsuariosController{
       //Criptografando a senha 
       const senhaCriptografada = await criptografandoSenha(senha);
 
-      //Persistindo o novo usuário no banco
+      // //Persistindo o novo usuário no banco
       const [id] = await usuariosServices.cadastrarRegistro({nome, email, senha: senhaCriptografada});
       const [novoUsuario] = await usuariosServices.listarRegistro('id', id) ;
 
-      //Escondendo a senha do usuário
+      // //Escondendo a senha do usuário
       const usuarioSemSenha =   escondendoSenhaUsuario(novoUsuario);
 
       return res.status(201).send(usuarioSemSenha); 
@@ -46,7 +49,10 @@ class UsuariosController{
 
     try {
       //Verificando os  campos obrigátorios
-      verificaCamposEmBranco(req.body, res, 'email', 'senha');
+      const  erroCampos = verificaCamposEmBranco(req.body, 'email', 'senha');
+      if(erroCampos){
+        return res.status(409).send({mensagem: erroCampos}) ;
+      }
 
       //Verificando se existe usuário cadastrado com email fornecedo
       const [usuarioEncontrado] = await usuariosServices.listarRegistro('email', email); 
@@ -109,7 +115,10 @@ class UsuariosController{
     try {
 
       //Verificando os  campos obrigátorios
-      verificaCamposEmBranco(req.body, res, 'nome','email', 'senha');
+      const erroCampos = verificaCamposEmBranco(req.body, 'nome','email', 'senha');
+      if(erroCampos){
+        return res.status(409).send({mensagem: erroCampos}) ;
+      }
 
       //Verificando se email já foi cadastrado no banco
       await verificandoSeEmailJaCadastrado(res, email);
@@ -126,17 +135,13 @@ class UsuariosController{
       //Mudar quando for colocado no final
       return res.status(201).send({mensagem: 'Usuário atualizado'})
     } catch (erro) {
-      
+      console.log(erro);
+      return res.status(500).send({mensagem: 'Servidor com problemas. Tente novamente mais tarde!'});
     }
   }
 }
 
-async function resgatarIdUsuarioPorToken(req){
-  const secret = process.env.SECRET;
-  const token = req.get('authorization').split(' ')[1];
-  const idUsario = await jwt.verify(token, secret).id;
-  return idUsario;
-}
+
 
 async function verificandoSeEmailJaCadastrado(res, email){
   const [emailCadastrado] = await usuariosServices.verificaEmailCadastrado('email', email);
