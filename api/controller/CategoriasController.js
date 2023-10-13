@@ -1,9 +1,10 @@
-import bcrypt from 'bcrypt';
-import jwt  from 'jsonwebtoken';
-import 'dotenv/config';
 import db from '../database/conecaoDb.js';
 import utilitarios from '../helpers/utilitarios.js';
 const {verificaCamposEmBranco, resgatarIdUsuarioPorToken} = utilitarios;
+
+import Services from '../services/index.js'
+const {CategoriasServices} =  Services;
+const categoriasServices = new CategoriasServices();
 
 class CategoriasController{
 
@@ -12,20 +13,8 @@ class CategoriasController{
 
       //Resgatando id de usuário pelo token
       const idUsuario = await resgatarIdUsuarioPorToken(req);
-
-      //Puxando todas categorias associadas ao usuários
-      const categoriasUsuarios = await db('categorias').select([        //Função
-        'categorias.id',
-        'categorias.descricao ',
-        'usuarios.nome as usuario',
-        'usuario_id',
-      ]).distinct('categorias.id')
-      .innerJoin('usuarios', function (){
-        this.on('categorias.usuario_id', '=', 'usuarios.id')
-        .andOn('usuarios.id', '=', idUsuario);
-      });
+      const categoriasUsuarios = await categoriasServices.listarTodosResgistro(idUsuario);
    
-
       return res.status(200).send(categoriasUsuarios);
     
     } catch (erro) {
