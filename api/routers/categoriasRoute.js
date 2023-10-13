@@ -6,5 +6,6 @@ const router = Router();
 router
 .get('/categoria',verificarToken, CategoriasController.listarCategorias)
 .get('/categoria/:id',verificarToken, CategoriasController.listarCategoriaPorId)
+.post('/categoria', verificarToken, CategoriasController.cadastrarCategoria)
 
 export default router;
