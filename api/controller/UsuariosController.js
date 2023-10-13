@@ -3,9 +3,10 @@ import jwt  from 'jsonwebtoken';
 import 'dotenv/config';
 import utilitarios from '../helpers/utilitarios.js';
 const {verificaCamposEmBranco, resgatarIdUsuarioPorToken} = utilitarios;
-
-import UsuariosServices from '../services/index.js';
+import Services from '../services/index.js'
+const {UsuariosServices} =  Services;
 const usuariosServices = new UsuariosServices();
+
 
 class UsuariosController{
     

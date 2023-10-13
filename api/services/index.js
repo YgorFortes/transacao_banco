@@ -1,4 +1,4 @@
 import UsuariosServices from "./UsuariosServices.js";
+import CategoriasServices from "./CategoriasServices.js";
 
-
-export default  UsuariosServices
+export default  {UsuariosServices, CategoriasServices}
