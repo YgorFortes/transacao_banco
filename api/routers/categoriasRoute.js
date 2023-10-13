@@ -8,5 +8,6 @@ router
 .get('/categoria/:id',verificarToken, CategoriasController.listarCategoriaPorId)
 .post('/categoria', verificarToken, CategoriasController.cadastrarCategoria)
 .put('/categoria/:id', verificarToken, CategoriasController.atualizarCategoria)
+.delete('/categoria/:id', verificarToken, CategoriasController.excluirCategoria)
 
 export default router;
