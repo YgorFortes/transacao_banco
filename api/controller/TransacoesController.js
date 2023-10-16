@@ -10,10 +10,15 @@ const categoriasServices = new CategoriasServices();
 class TransacoesController{
 
   static async listarTransacoes(req, res){
-  
+    const {filtro} = req.query;
     try {
       //Resgatando id de usuário pelo token
       const idUsuario = await resgatarIdUsuarioPorToken(req);
+  
+      if(filtro){
+        const transacao =  await transacaoServices.listarRegistroPorFiltro('categorias.descricao', filtro, idUsuario)
+        return res.status(200).send(transacao);
+      }
 
       //Buscando transações do usuário
       const transacoes = await transacaoServices.listarTodosOsRegistros(idUsuario);
@@ -35,7 +40,7 @@ class TransacoesController{
       const idUsuario = await resgatarIdUsuarioPorToken(req);
 
       //Buscando transação do usuário
-      const [transacoes] = await transacaoServices.listarRegistro(id, idUsuario);
+      const [transacoes] = await transacaoServices.listarRegistro('transacoes.id',id, idUsuario);
 
       //Verifica se existe trnsação pelo id de usuário
       if(!transacoes){
@@ -83,7 +88,7 @@ class TransacoesController{
       const [idNovaTransacao] = await transacaoServices.cadastrarRegistro({descricao, valor, data, categoria_id, usuario_id: idUsuario, tipo});
 
       //Buscando transação  recente cadastratada
-      const [novaTransacao] = await transacaoServices.listarRegistro(idNovaTransacao, idUsuario);
+      const [novaTransacao] = await transacaoServices.listarRegistro('transacoes.id',idNovaTransacao, idUsuario);
 
       return res.status(201).send(novaTransacao);
     } catch (erro) {
@@ -116,7 +121,7 @@ class TransacoesController{
 
 
       //Verificando se existe transação cadastrada pelo usuário
-      const [transacao] = await transacaoServices.listarRegistro(id, idUsuario);
+      const [transacao] = await transacaoServices.listarRegistro('transacoes.id',id, idUsuario);
 
       //Verificando se transação é de usuário 
       if(!transacao){
@@ -154,7 +159,7 @@ class TransacoesController{
       const idUsuario = await resgatarIdUsuarioPorToken(req);
 
       //Verificando se existe transação cadastrada pelo usuário
-      const [transacao] = await transacaoServices.listarRegistro(id, idUsuario);
+      const [transacao] = await transacaoServices.listarRegistro('transacoes.id',id, idUsuario);
 
       //Verificando se transação é de usuário 
       if(!transacao){
@@ -207,7 +212,7 @@ class TransacoesController{
      .where('tipo', 'saida');
 
 
-
+     //Cria um objeto com valores de entrada e saida das transações
      const extrato = calcularTotalTransacoes(valorTransacaoEntrada, valorTransacaoSaida);
 
 
@@ -218,7 +223,6 @@ class TransacoesController{
       return res.status(500).send({mensagem: 'Servidor com problemas. Tente novamente mais tarde!'});
     }
   }
-
 
 }
 

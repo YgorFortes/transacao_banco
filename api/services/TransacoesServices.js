@@ -28,7 +28,7 @@ class TransacoesServices extends Services{
     });
   }
 
-  async listarRegistro(idTransacao, idUsuario){
+  async listarRegistro(parametro, valorParametro, idUsuario){
     return db('transacoes').select([
       'transacoes.id',
       'transacoes.descricao',
@@ -47,7 +47,29 @@ class TransacoesServices extends Services{
       this.on('transacoes.usuario_id', '=', 'usuarios.id')
       .andOn('usuarios.id',  '=', idUsuario);
     })
-    .where('transacoes.id', idTransacao)
+    .where(parametro, valorParametro);
+  }
+
+  async listarRegistroPorFiltro(parametro, valorParametro, idUsuario){
+    return   db('transacoes').select([
+      'transacoes.id',
+      'transacoes.descricao',
+      'transacoes.valor',
+      'transacoes.data',
+      'transacoes.categoria_id',
+      'transacoes.usuario_id',
+      'transacoes.tipo',
+      'usuarios.nome as usuario',
+      'categorias.descricao as categoria_nome'
+    ])
+    .innerJoin('categorias', function(){
+      this.on('transacoes.categoria_id', '=', 'categorias.id')
+    })
+    .innerJoin('usuarios', function (){
+      this.on('transacoes.usuario_id', '=', 'usuarios.id')
+      .andOn('usuarios.id',  '=', idUsuario);
+    })
+    .whereIn(parametro, valorParametro);
   }
 
 }
