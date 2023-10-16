@@ -13,6 +13,8 @@ class CategoriasController{
 
       //Resgatando id de usuário pelo token
       const idUsuario = await resgatarIdUsuarioPorToken(req);
+
+      //Buscando categorias de usuário 
       const categoriasUsuarios = await categoriasServices.listarTodosResgistro(idUsuario);
    
       return res.status(200).send(categoriasUsuarios);
