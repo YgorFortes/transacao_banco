@@ -18,7 +18,7 @@ class CategoriasServices extends Services{
     });
   }
 
-  async litarRegistroPorId(idCategoria, idUsuario){
+  async listarRegistro(idCategoria, idUsuario){
     return db('categorias').select([
       'categorias.id',
       'categorias.descricao ',

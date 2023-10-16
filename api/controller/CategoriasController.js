@@ -33,7 +33,7 @@ class CategoriasController{
       const idUsuario = await resgatarIdUsuarioPorToken(req);
 
       //Buscando categoria por id
-      const [categoria] = await categoriasServices.litarRegistroPorId(id, idUsuario);
+      const [categoria] = await categoriasServices.listarRegistro(id, idUsuario);
 
       //Verificando se categoria existe
       if((!categoria)){
@@ -64,7 +64,7 @@ class CategoriasController{
       const [idNovaCategoria] = await categoriasServices.cadastrarRegistro({usuario_id: idUsuario, descricao});
 
       //Buscando novo Usuário
-      const [novaCategoria] = await categoriasServices.litarRegistroPorId(idNovaCategoria, idUsuario);
+      const [novaCategoria] = await categoriasServices.listarRegistro(idNovaCategoria, idUsuario);
 
       //Verificando se categoria existe
       if((!novaCategoria)){
@@ -93,7 +93,7 @@ class CategoriasController{
       }
 
       //Buscando categoria por id
-      const [categoria] = await categoriasServices.litarRegistroPorId(id, idUsuario);
+      const [categoria] = await categoriasServices.listarRegistro(id, idUsuario);
 
       //Verificando se categoria existe
       if((!categoria)){
@@ -123,7 +123,7 @@ class CategoriasController{
       const idUsuario = await resgatarIdUsuarioPorToken(req);
 
       //Buscando categoria por id
-      const [categoria] = await categoriasServices.litarRegistroPorId(id, idUsuario);
+      const [categoria] = await categoriasServices.listarRegistro(id, idUsuario);
       
       //Verificando se categoria existe
       if(!categoria){
