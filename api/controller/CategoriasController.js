@@ -31,16 +31,7 @@ class CategoriasController{
       const idUsuario = await resgatarIdUsuarioPorToken(req);
 
       //Buscando categoria por id
-      const [categoria] = await db('categorias').select([
-        'categorias.id',
-        'categorias.descricao ',
-        'usuarios.nome as usuario',
-        'usuario_id',
-      ])
-      .innerJoin('usuarios', function (){
-        this.on('categorias.usuario_id', '=', 'usuarios.id')
-        .andOn('usuarios.id', '=', idUsuario);
-      }).where('categorias.id', id);
+      const [categoria] = await categoriasServices.litarRegistroPorId(id, idUsuario);
 
       //Verificando se categoria existe
       if((!categoria)){
@@ -67,18 +58,11 @@ class CategoriasController{
         return res.status(409).send({mensagem: erroCampos});
       }
 
-      const [idNovaCategoria] = await db('categorias').insert({usuario_id: idUsuario, descricao});
+      //Fazendo a inserção de novo usuário
+      const [idNovaCategoria] = await categoriasServices.cadastrarRegistro({usuario_id: idUsuario, descricao});
 
-      const [novaCategoria] = await db('categorias').select([
-        'categorias.id',
-        'categorias.descricao ',
-        'usuarios.nome as usuario',
-        'usuario_id',
-      ])
-      .innerJoin('usuarios', function (){
-        this.on('categorias.usuario_id', '=', 'usuarios.id')
-        .andOn('usuarios.id', '=', idUsuario);
-      }).where('categorias.id', idNovaCategoria);
+      //Buscando novo Usuário
+      const [novaCategoria] = await categoriasServices.litarRegistroPorId(idNovaCategoria, idUsuario);
 
       //Verificando se categoria existe
       if((!novaCategoria)){
@@ -107,24 +91,17 @@ class CategoriasController{
       }
 
       //Buscando categoria por id
-      const [categoria] = await db('categorias').select([
-        'categorias.id',
-        'categorias.descricao ',
-        'usuarios.nome as usuario',
-        'usuario_id',
-      ])
-      .innerJoin('usuarios', function (){
-        this.on('categorias.usuario_id', '=', 'usuarios.id')
-        .andOn('usuarios.id', '=', idUsuario);
-      }).where('categorias.id', id);
-      
-      
+      const [categoria] = await categoriasServices.litarRegistroPorId(id, idUsuario);
+
       //Verificando se categoria existe
       if((!categoria)){
         return  res.status(404).send({mensagem: "Categoria não encontrada."})
       }
 
-      const resultadoAtualizacao = await  db('categorias').update({descricao}).where('id', id);
+      //Atualizando categoria
+      const resultadoAtualizacao = await categoriasServices.atualizarDadosRegistros({descricao},'id', id);
+
+      //Verificando se atualizou com sucesso
       if(resultadoAtualizacao <1){
         return  res.status(404).send({mensagem: "Categoria não atualizada."})
       }
@@ -144,25 +121,17 @@ class CategoriasController{
       const idUsuario = await resgatarIdUsuarioPorToken(req);
 
       //Buscando categoria por id
-      const [categoria] = await db('categorias').select([
-        'categorias.id',
-        'categorias.descricao ',
-        'usuarios.nome as usuario',
-        'usuario_id',
-      ])
-      .innerJoin('usuarios', function (){
-        this.on('categorias.usuario_id', '=', 'usuarios.id')
-        .andOn('usuarios.id', '=', idUsuario);
-      }).where('categorias.id', id);
-      
-
+      const [categoria] = await categoriasServices.litarRegistroPorId(id, idUsuario);
       
       //Verificando se categoria existe
       if(!categoria){
         return res.status(404).send({mensagem: "Categoria não encontrada."})
       }
 
-      const resultadoExclusao = await db('categorias').delete().where('id', id);
+      //Excluindo categoria
+      const resultadoExclusao = await categoriasServices.excluirRegistro('id', id);
+
+      //Verificando se excluiu
       if(resultadoExclusao <1){
         return res.status(404).send({mensagem: "Categoria não excluída."});
       }

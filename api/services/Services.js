@@ -19,6 +19,10 @@ class Services{
   async atualizarDadosRegistros(novosDados, parametro, valorParametro){
     return db(this.nomeTabela).update(novosDados).where(parametro, valorParametro);
   }
+
+  async excluirRegistro(parametro, valorParametro){
+    return db(this.nomeTabela).delete().where(parametro, valorParametro);
+  }
 }
 
 export default Services;
