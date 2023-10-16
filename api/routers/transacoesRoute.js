@@ -7,6 +7,7 @@ router
 .get('/transacao',verificarToken, TransacoesController.listarTransacoes)
 .get('/transacao/:id', verificarToken, TransacoesController.listarTransacaoPorId)
 .post('/transacao', verificarToken, TransacoesController.cadastrarTransacao)
-.put('/transacao/:id', TransacoesController.atualizarTransacao)
+.put('/transacao/:id',verificarToken, TransacoesController.atualizarTransacao)
+.delete('/transacao/:id', verificarToken, TransacoesController.excluirTransacao)
 
 export default router;
