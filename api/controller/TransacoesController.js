@@ -1,3 +1,4 @@
+import db from '../database/conecaoDb.js';
 import utilitarios from '../helpers/utilitarios.js';
 const {verificaCamposEmBranco, resgatarIdUsuarioPorToken} = utilitarios;
 
@@ -175,16 +176,73 @@ class TransacoesController{
     }
   }
 
+  static async extratoTransacao(req, res){
+   
+    try {
+
+      //Resgatando id de Usuário pelo token
+      const idUsuario = await resgatarIdUsuarioPorToken(req);
+
+      //Valor total das transações de entrada
+     const [valorTransacaoEntrada]  = await db('transacoes')
+     .innerJoin('categorias', function(){
+       this.on('transacoes.categoria_id', '=', 'categorias.id')
+     })
+     .innerJoin('usuarios', function (){
+       this.on('transacoes.usuario_id', '=', 'usuarios.id')
+       .andOn('usuarios.id',  '=', idUsuario);
+     }).sum('transacoes.valor as valorTotal')
+     .where('tipo', 'entrada');
+     
+
+     //Valor total das transações de saída
+     const [valorTransacaoSaida]  = await db('transacoes')
+     .innerJoin('categorias', function(){
+       this.on('transacoes.categoria_id', '=', 'categorias.id')
+     })
+     .innerJoin('usuarios', function (){
+       this.on('transacoes.usuario_id', '=', 'usuarios.id')
+       .andOn('usuarios.id',  '=', idUsuario);
+     }).sum('transacoes.valor as valorTotal')
+     .where('tipo', 'saida');
+
+
+
+     const extrato = calcularTotalTransacoes(valorTransacaoEntrada, valorTransacaoSaida);
+
+
+     return res.status(200).send(extrato)
+  
+    } catch (erro) {
+      console.log(erro);
+      return res.status(500).send({mensagem: 'Servidor com problemas. Tente novamente mais tarde!'});
+    }
+  }
+
 
 }
 
- function verificandoTipoSaida(tipo){
+function verificandoTipoSaida(tipo){
   // const tipoFormatado= tipo.toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g, "");
   let mensagem ;
   if((tipo !== 'saida') && (tipo !=='entrada') ){
     return mensagem = 'Digite saida ou entrada sem letras com acento, ou maísculas';
   }
+}
 
+function calcularTotalTransacoes(entrada, saida){
+  let valorEntrada = entrada.valorTotal;
+  let valoSaida = saida.valorTotal;     
+  if((valorEntrada === null) ) {
+    valorEntrada = 0;
+  }else if ((valoSaida === null) ) {
+    valoSaida = 0;
+  }
+  const extrato = {
+    entrada: Number(valorEntrada),
+    saida: Number(valoSaida)
+  }
+  return extrato;
 }
 
 
