@@ -3,6 +3,8 @@ import TransacoesController from "../controller/TransacoesController.js";
 import verificarToken from "../middleware/verificarToken.js";
 const router = Router();
 
-router.get('/transacao',verificarToken, TransacoesController.listarTransacoes)
+router
+.get('/transacao',verificarToken, TransacoesController.listarTransacoes)
+.get('/transacao/:id', verificarToken, TransacoesController.listarTransacaoPorId)
 
 export default router;
