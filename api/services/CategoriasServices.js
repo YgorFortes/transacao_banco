@@ -17,6 +17,19 @@ class CategoriasServices extends Services{
       .andOn('usuarios.id', '=', idUsuario);
     });
   }
+
+  async litarRegistroPorId(idCategoria, idUsuario){
+    return db('categorias').select([
+      'categorias.id',
+      'categorias.descricao ',
+      'usuarios.nome as usuario',
+      'usuario_id',
+    ])
+    .innerJoin('usuarios', function (){
+      this.on('categorias.usuario_id', '=', 'usuarios.id')
+      .andOn('usuarios.id', '=', idUsuario);
+    }).where('categorias.id', idCategoria);
+  }
   
 
 
