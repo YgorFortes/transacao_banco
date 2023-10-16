@@ -6,5 +6,7 @@ const router = Router();
 router
 .get('/transacao',verificarToken, TransacoesController.listarTransacoes)
 .get('/transacao/:id', verificarToken, TransacoesController.listarTransacaoPorId)
+.post('/transacao', verificarToken, TransacoesController.cadastrarTransacao)
+.put('/transacao/:id', TransacoesController.atualizarTransacao)
 
 export default router;
