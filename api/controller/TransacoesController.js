@@ -1,6 +1,10 @@
-import db from "../database/conecaoDb.js";
 import utilitarios from '../helpers/utilitarios.js';
 const {verificaCamposEmBranco, resgatarIdUsuarioPorToken} = utilitarios;
+
+import Services from '../services/index.js'
+const {TransacoesServices, CategoriasServices} =  Services;
+const transacaoServices = new TransacoesServices();
+const categoriasServices = new CategoriasServices();
 
 class TransacoesController{
 
@@ -11,24 +15,7 @@ class TransacoesController{
       const idUsuario = await resgatarIdUsuarioPorToken(req);
 
       //Buscando transações do usuário
-      const transacoes = await db('transacoes').select([
-        'transacoes.id',
-        'transacoes.descricao',
-        'transacoes.valor',
-        'transacoes.data',
-        'transacoes.categoria_id',
-        'transacoes.usuario_id',
-        'transacoes.tipo',
-        'usuarios.nome as usuario',
-        'categorias.descricao as categoria_nome'
-      ])
-      .innerJoin('categorias', function(){
-        this.on('transacoes.categoria_id', '=', 'categorias.id')
-      })
-      .innerJoin('usuarios', function (){
-        this.on('transacoes.usuario_id', '=', 'usuarios.id')
-        .andOn('usuarios.id',  '=', idUsuario);
-      });
+      const transacoes = await transacaoServices.listarTodosOsRegistros(idUsuario);
 
   
       return res.status(200).send(transacoes);
@@ -47,30 +34,12 @@ class TransacoesController{
       const idUsuario = await resgatarIdUsuarioPorToken(req);
 
       //Buscando transação do usuário
-      const [transacoes] = await db('transacoes').select([
-        'transacoes.id',
-        'transacoes.descricao',
-        'transacoes.valor',
-        'transacoes.data',
-        'transacoes.categoria_id',
-        'transacoes.usuario_id',
-        'transacoes.tipo',
-        'usuarios.nome as usuario',
-        'categorias.descricao as categoria_nome'
-      ])
-      .innerJoin('categorias', function(){
-        this.on('transacoes.categoria_id', '=', 'categorias.id')
-      })
-      .innerJoin('usuarios', function (){
-        this.on('transacoes.usuario_id', '=', 'usuarios.id')
-        .andOn('usuarios.id',  '=', idUsuario);
-      })
-      .where('transacoes.id', id)
+      const [transacoes] = await transacaoServices.listarRegistro(id, idUsuario);
 
+      //Verifica se existe trnsação pelo id de usuário
       if(!transacoes){
         return res.status(404).send({mensagem: 'Transação não encontrada'});
       }
-
 
       return res.status(200).send(transacoes);
     } catch (erro) {
@@ -102,16 +71,7 @@ class TransacoesController{
 
      
       //Verificando se existe categoria cadastrada
-      const [categoriaExiste] = await db('categorias').select([
-        'categorias.id',
-        'categorias.descricao ',
-        'usuarios.nome as usuario',
-        'usuario_id',
-      ])
-      .innerJoin('usuarios', function (){
-        this.on('categorias.usuario_id', '=', 'usuarios.id')
-        .andOn('usuarios.id', '=', idUsuario);
-      }).where('categorias.id', categoria_id);
+      const [categoriaExiste] = await categoriasServices.listarRegistro(categoria_id, idUsuario);
 
       //Verificando se categoria existe
       if(!categoriaExiste){
@@ -119,30 +79,12 @@ class TransacoesController{
       }
       
       //Cadastando transação
-      const [idNovaTransacao] = await db('transacoes').insert({descricao, valor, data, categoria_id, usuario_id: idUsuario, tipo});
+      const [idNovaTransacao] = await transacaoServices.cadastrarRegistro({descricao, valor, data, categoria_id, usuario_id: idUsuario, tipo});
 
       //Buscando transação  recente cadastratada
-      const [novaTransacao] = await db('transacoes').select([
-        'transacoes.id',
-        'transacoes.descricao',
-        'transacoes.valor',
-        'transacoes.data',
-        'transacoes.categoria_id',
-        'transacoes.usuario_id',
-        'transacoes.tipo',
-        'usuarios.nome as usuario',
-        'categorias.descricao as categoria_nome'
-      ])
-      .innerJoin('categorias', function(){
-        this.on('transacoes.categoria_id', '=', 'categorias.id')
-      })
-      .innerJoin('usuarios', function (){
-        this.on('transacoes.usuario_id', '=', 'usuarios.id')
-        .andOn('usuarios.id',  '=', idUsuario);
-      })
-      .where('transacoes.id', idNovaTransacao);
+      const [novaTransacao] = await transacaoServices.listarRegistro(idNovaTransacao, idUsuario);
 
-      return res.status(200).send(novaTransacao);
+      return res.status(201).send(novaTransacao);
     } catch (erro) {
       console.log(erro);
       return res.status(500).send({mensagem: 'Servidor com problemas. Tente novamente mais tarde!'});
@@ -155,10 +97,10 @@ class TransacoesController{
     const {id} = req.params;
     try {
 
-       //Buscando id de usuário pelo token
-       const idUsuario = await resgatarIdUsuarioPorToken(req);
+      //Buscando id de usuário pelo token
+      const idUsuario = await resgatarIdUsuarioPorToken(req);
 
-       //Verificando se campos 
+      //Verificando se campos 
       const erroCampos = verificaCamposEmBranco(req.body, 'descricao', 'valor', 'data', 'categoria_id', 'tipo');
       if(erroCampos){
         return res.status(409).send({mensagem: erroCampos});
@@ -173,25 +115,7 @@ class TransacoesController{
 
 
       //Verificando se existe transação cadastrada pelo usuário
-      const [transacao] = await db('transacoes').select([
-        'transacoes.id',
-        'transacoes.descricao',
-        'transacoes.valor',
-        'transacoes.data',
-        'transacoes.categoria_id',
-        'transacoes.usuario_id',
-        'transacoes.tipo',
-        'usuarios.nome as usuario',
-        'categorias.descricao as categoria_nome'
-      ])
-      .innerJoin('categorias', function(){
-        this.on('transacoes.categoria_id', '=', 'categorias.id')
-      })
-      .innerJoin('usuarios', function (){
-        this.on('transacoes.usuario_id', '=', 'usuarios.id')
-        .andOn('usuarios.id',  '=', idUsuario);
-      })
-      .where('transacoes.id', id);
+      const [transacao] = await transacaoServices.listarRegistro(id, idUsuario);
 
       //Verificando se transação é de usuário 
       if(!transacao){
@@ -199,16 +123,7 @@ class TransacoesController{
       }
 
       //Verificando se existe categoria cadastrada
-      const [categoriaExiste] = await db('categorias').select([
-        'categorias.id',
-        'categorias.descricao ',
-        'usuarios.nome as usuario',
-        'usuario_id',
-      ])
-      .innerJoin('usuarios', function (){
-        this.on('categorias.usuario_id', '=', 'usuarios.id')
-        .andOn('usuarios.id', '=', idUsuario);
-      }).where('categorias.id', categoria_id);
+      const [categoriaExiste] = await categoriasServices.listarRegistro(categoria_id, idUsuario);
 
       //Verificando se categoria existe
       if(!categoriaExiste){
@@ -216,7 +131,7 @@ class TransacoesController{
       }
       
       //Atualizando transação
-      const resultadoAtualizacao = await db('transacoes').update({descricao, valor, data, categoria_id, usuario_id: idUsuario, tipo}).where('id', id);
+      const resultadoAtualizacao = await transacaoServices.atualizarDadosRegistros({descricao, valor, data, categoria_id, usuario_id: idUsuario, tipo}, 'id', id);
 
       //Verificando se atualizou com sucesso
       if(resultadoAtualizacao <1){
@@ -231,33 +146,14 @@ class TransacoesController{
 
   static async excluirTransacao(req, res){
     const {id} = req.params;
-    const{descricao, valor, data, categoria_id, tipo} = req.body;
 
     try {
 
       //Resgatando id de Usuário pelo token
       const idUsuario = await resgatarIdUsuarioPorToken(req);
 
-       //Verificando se existe transação cadastrada pelo usuário
-       const [transacao] = await db('transacoes').select([
-        'transacoes.id',
-        'transacoes.descricao',
-        'transacoes.valor',
-        'transacoes.data',
-        'transacoes.categoria_id',
-        'transacoes.usuario_id',
-        'transacoes.tipo',
-        'usuarios.nome as usuario',
-        'categorias.descricao as categoria_nome'
-      ])
-      .innerJoin('categorias', function(){
-        this.on('transacoes.categoria_id', '=', 'categorias.id')
-      })
-      .innerJoin('usuarios', function (){
-        this.on('transacoes.usuario_id', '=', 'usuarios.id')
-        .andOn('usuarios.id',  '=', idUsuario);
-      })
-      .where('transacoes.id', id);
+      //Verificando se existe transação cadastrada pelo usuário
+      const [transacao] = await transacaoServices.listarRegistro(id, idUsuario);
 
       //Verificando se transação é de usuário 
       if(!transacao){
@@ -265,7 +161,7 @@ class TransacoesController{
       }
       
       //Excluindo transação por id
-      const resultadoExclusao = await db('transacoes').delete().where('id', id);
+      const resultadoExclusao = await transacaoServices.excluirRegistro('id', id);
 
       //Verificando se deletou com sucesso
       if(resultadoExclusao <1){
