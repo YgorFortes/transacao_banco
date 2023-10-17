@@ -187,36 +187,17 @@ class TransacoesController{
 
       //Resgatando id de Usuário pelo token
       const idUsuario = await resgatarIdUsuarioPorToken(req);
-
+      
       //Valor total das transações de entrada
-     const [valorTransacaoEntrada]  = await db('transacoes')
-     .innerJoin('categorias', function(){
-       this.on('transacoes.categoria_id', '=', 'categorias.id')
-     })
-     .innerJoin('usuarios', function (){
-       this.on('transacoes.usuario_id', '=', 'usuarios.id')
-       .andOn('usuarios.id',  '=', idUsuario);
-     }).sum('transacoes.valor as valorTotal')
-     .where('tipo', 'entrada');
-     
+      const [valorTransacaoEntrada] = await transacaoServices.gerarValorTotalEntrada(idUsuario);
 
-     //Valor total das transações de saída
-     const [valorTransacaoSaida]  = await db('transacoes')
-     .innerJoin('categorias', function(){
-       this.on('transacoes.categoria_id', '=', 'categorias.id')
-     })
-     .innerJoin('usuarios', function (){
-       this.on('transacoes.usuario_id', '=', 'usuarios.id')
-       .andOn('usuarios.id',  '=', idUsuario);
-     }).sum('transacoes.valor as valorTotal')
-     .where('tipo', 'saida');
+      //valor total das tansações de saída
+      const [valorTransacaoSaida] = await transacaoServices.gerarValorTotalSaida(idUsuario);
 
-
-     //Cria um objeto com valores de entrada e saida das transações
-     const extrato = calcularTotalTransacoes(valorTransacaoEntrada, valorTransacaoSaida);
-
-
-     return res.status(200).send(extrato)
+      //Gerando o extrato com valores de entrada e saida das transações
+      const extrato = calcularTotalTransacoes(valorTransacaoEntrada, valorTransacaoSaida);  
+      
+      return res.status(200).send(extrato)
   
     } catch (erro) {
       console.log(erro);
