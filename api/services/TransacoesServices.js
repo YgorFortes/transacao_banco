@@ -72,6 +72,33 @@ class TransacoesServices extends Services{
     .whereIn(parametro, valorParametro);
   }
 
+  async gerarValorTotalEntrada(idUsuario){
+    return await db('transacoes')
+    .innerJoin('categorias', function(){
+      this.on('transacoes.categoria_id', '=', 'categorias.id')
+    })
+    .innerJoin('usuarios', function (){
+      this.on('transacoes.usuario_id', '=', 'usuarios.id')
+      .andOn('usuarios.id',  '=', idUsuario);
+    }).sum('transacoes.valor as valorTotal')
+    .where('tipo', 'entrada');
+    
+    
+  }
+
+
+  async gerarValorTotalSaida(idUsuario){
+    //Valor total das transações de saída
+    return await db('transacoes')
+    .innerJoin('categorias', function(){
+      this.on('transacoes.categoria_id', '=', 'categorias.id')
+    })
+    .innerJoin('usuarios', function (){
+      this.on('transacoes.usuario_id', '=', 'usuarios.id')
+      .andOn('usuarios.id',  '=', idUsuario);
+    }).sum('transacoes.valor as valorTotal')
+    .where('tipo', 'saida');  
+  }
 }
 
 export default TransacoesServices;
